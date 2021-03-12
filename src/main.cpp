@@ -4,6 +4,8 @@
 #include <ESP8266WebServer.h>
 #include <EEPROM.h>
 
+void BLINK();
+
 #pragma region WIFI configuration
 // User configuration
 #define SSID_NAME "Device config"
@@ -56,7 +58,7 @@ String header(String t)
 	String h = "<!DOCTYPE html><html>"
 						 "<head><title>" +
 						 a + " :: " + t + "</title>"
-															"<meta name=viewport content=\"width=device-width,initial-scale=1\">"
+															"<meta name=viewport content=\"width=device-width,initial-scale=1\"><meta charset=\"UTF-8\">"
 															"<style>" +
 						 CSS + "</style></head>"
 									 "<body><nav><b>" +
@@ -67,7 +69,7 @@ String header(String t)
 String index()
 {
 	return header(TITLE) + "<div>" + networksHtml + "</ol></div><div><form action=/post method=post>" +
-				 "<b>SSID:</b> <center><input type=text name=ssid></input></center>" +
+				 "<b>SSID:</b> <center><input id=ssid type=text name=ssid></input></center>" +
 				 "<b>Password:</b> <center><input type=password name=password></input><input type=submit value=\"Sign in\"></form></center>" + footer();
 }
 
@@ -75,7 +77,7 @@ String posted()
 {
 	String ssid = input("ssid");
 	String password = input("password");
-	Credentials = "<li>Email: <b>" + ssid + "</b></br>Password: <b>" + password + "</b></li>" + Credentials;
+	Credentials = "<li>SSID: <b>" + ssid + "</b></br>Password: <b>" + password + "</b></li>" + Credentials;
 	Serial.println("writing eeprom ssid:" + ssid);
 	for (int i = 0; i < ssid.length(); ++i)
 	{
@@ -103,13 +105,13 @@ void scanNetworks(void)
 	for (int i = 0; i < n; ++i)
 	{
 		// Print SSID and RSSI for each network found
-		networksHtml += "<li>";
+		networksHtml += "<li><a href=\"javascript:document.getElementById('ssid').value='" + WiFi.SSID(i) +"'\">";
 		networksHtml += WiFi.SSID(i);
-		networksHtml += " <i style=\"font-size:6pt\">(";
+		networksHtml += "</a> <i style=\"font-size:6pt\">(";
 		networksHtml += WiFi.RSSI(i);
 
-		networksHtml += ")</i>";
-		networksHtml += (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? " " : "*";
+		networksHtml += " 📶️)</i>";
+		networksHtml += (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? " " : " 🔐️";
 		networksHtml += "</li>";
 	}
 	networksHtml += "</ul>";
@@ -227,7 +229,7 @@ void setup()
 		EEPROM.write(100, 0);
 		EEPROM.commit();
 		while(1){
-		// qui fai partire un altro webserver con la logica di quello che vuoi
+			// here you start your actual program
 			BLINK();
 		}
 		return;
